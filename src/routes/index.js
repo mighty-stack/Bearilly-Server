@@ -17,6 +17,7 @@ import assessmentRoutes from "../modules/assessments/assessment.routes.js";
 import submissionRoutes from "../modules/submission/submission.route.js"
 import adminRoutes from "../modules/admin/admin.routes.js";
 import healthRoutes from "../modules/health/health.routes.js";
+import paymentRoutes from "../modules/payments/payment.routes.js";
 
 const router = Router();
 
@@ -39,5 +40,6 @@ router.use("/assessments", assessmentRoutes);
 router.use("/submission", submissionRoutes)
 router.use("/admin", adminRoutes);
 router.use("/health", healthRoutes);
+router.use("/payments", paymentRoutes);
 
 export default router;
