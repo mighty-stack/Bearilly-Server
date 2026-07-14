@@ -72,7 +72,6 @@ const submissionSchema =
 
 submissionSchema.index(
   {
-    submissionId: 1,
     assessment: 1,
     user: 1,
   },

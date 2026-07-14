@@ -1,28 +1,50 @@
-const accessMiddleware = (requiredRole) => {
-    return (req, res, next) => {
-        if (!req.user) {
-            return res.status(401).json({
-                success: false,
-                message: "Unauthorized"
-            });
-        }
+const accessMiddleware = (requiredRoleOrReq, res, next) => {
+    if (typeof requiredRoleOrReq === "string") {
+        const requiredRole = requiredRoleOrReq;
 
-        if (requiredRole && req.user.role !== requiredRole) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied"
-            });
-        }
+        return (req, res, next) => {
+            if (!req.user) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Unauthorized"
+                });
+            }
 
-        if (!req.user.accessGranted) {
-            return res.status(403).json({
-                success: false,
-                message: "Access code required"
-            });
-        }
+            if (requiredRole && req.user.role !== requiredRole) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access denied"
+                });
+            }
 
-        next();
-    };
+            if (!req.user.accessGranted) {
+                return res.status(403).json({
+                    success: false,
+                    message: "Access code required"
+                });
+            }
+
+            next();
+        };
+    }
+
+    const req = requiredRoleOrReq;
+
+    if (!req.user) {
+        return res.status(401).json({
+            success: false,
+            message: "Unauthorized"
+        });
+    }
+
+    if (!req.user.accessGranted) {
+        return res.status(403).json({
+            success: false,
+            message: "Access code required"
+        });
+    }
+
+    next();
 };
 
 export default accessMiddleware;

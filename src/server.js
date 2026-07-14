@@ -3,6 +3,14 @@ import connectDB from "./config/db.js";
 import env from "./config/env.js"
 import "./modules/assessments/assessment.job.js";
 
+const gracefulShutdown = (signal) => {
+    console.log(`Received ${signal}. Shutting down gracefully...`);
+    process.exit(0);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+
 const startServer = async () => {
     await connectDB()
 

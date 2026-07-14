@@ -1,22 +1,23 @@
-import { success } from "zod"
-
-const authorize = (...roles) => 
-    (res, req, next) => {
+const authorize = (...roles) => {
+    return (req, res, next) => {
         if (!req.user) {
             return res.status(401).json({
                 success: false,
                 message: "Unauthorized"
-            })
+            });
         }
 
-        if (!roles.includes(req.user.roles)) {
+        const userRole = req.user.role || req.user.roles;
+
+        if (!roles.includes(userRole)) {
             return res.status(403).json({
-                success,
+                success: false,
                 message: "You do not have permission to perform this action"
-            })
+            });
         }
 
-        next()
-    }
+        next();
+    };
+};
 
-    export default authorize
+export default authorize;

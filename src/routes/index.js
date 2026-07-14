@@ -15,6 +15,8 @@ import aiRoutes from "../modules/ai/ai.routes.js"
 import toolKitRoutes from "../modules/toolkit/toolkit.routes.js"
 import assessmentRoutes from "../modules/assessments/assessment.routes.js";
 import submissionRoutes from "../modules/submission/submission.route.js"
+import adminRoutes from "../modules/admin/admin.routes.js";
+import healthRoutes from "../modules/health/health.routes.js";
 
 const router = Router();
 
@@ -35,5 +37,7 @@ router.use("/ai", aiRoutes)
 router.use("/toolKit", toolKitRoutes)
 router.use("/assessments", assessmentRoutes);
 router.use("/submission", submissionRoutes)
+router.use("/admin", adminRoutes);
+router.use("/health", healthRoutes);
 
 export default router;

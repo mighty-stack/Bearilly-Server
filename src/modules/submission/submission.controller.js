@@ -1,4 +1,5 @@
 import submissionService from "./submission.service.js";
+import Analytics from "../analytics/analytics.model.js";
 
 import generateSubmissionId from "../../utils/generateSubmissionId.js";
 
@@ -43,12 +44,15 @@ const submitProject = async (req, res, next) => {
 
     let fileUrl = "";
     let originalName = "";
+    let fileType = "link";
 
     if (req.file) {
       fileUrl = `/uploads/submissions/${req.file.filename}`;
       originalName = req.file.originalname;
+      fileType = req.file.originalname.split(".").pop()?.toLowerCase() || "file";
     } else {
-      fileUrl = req.body.fileUrl;
+      fileUrl = req.body.fileUrl || "";
+      fileType = req.body.submissionType === "File" ? "file" : req.body.submissionType.toLowerCase();
     }
 
     const submission = await submissionService.createSubmission({
@@ -60,11 +64,34 @@ const submitProject = async (req, res, next) => {
       remarks: req.body.remarks,
       submissionId: generateSubmissionId(),
     });
+
     await assessment.updateOne({
       $inc: {
         totalSubmissions: 1,
       },
     });
+
+    await Analytics.create({
+      userId: req.user._id,
+      lessonId: assessment._id,
+      eventType: "submission_started",
+      metadata: { assessmentId: assessment._id, submissionType: req.body.submissionType },
+    });
+
+    await Analytics.create({
+      userId: req.user._id,
+      lessonId: assessment._id,
+      eventType: "submission_completed",
+      metadata: { assessmentId: assessment._id, submissionId: submission.submissionId },
+    });
+
+    await Analytics.create({
+      userId: req.user._id,
+      lessonId: assessment._id,
+      eventType: "file_type_usage",
+      metadata: { fileType, assessmentId: assessment._id },
+    });
+
     res.status(201).json({
       success: true,
       message: "Submission successful.",
@@ -169,13 +196,21 @@ const downloadSubmission = async (req, res, next) => {
 
 const submissionReceipt = async (req, res, next) => {
   try {
-    const submission = await SubmissionService.getSubmissionById(req.params.id);
+    const submission = await submissionService.getSubmissionById(req.params.id);
+
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: "Submission not found.",
+      });
+    }
+
     res.json({
       success: true,
       receipt: {
         submissionId: submission.submissionId,
-        assessment: submission.assessment.title,
-        submittedBy: submission.user.fullName,
+        assessment: submission.assessment?.title || "N/A",
+        submittedBy: submission.user?.fullName || "N/A",
         date: submission.createdAt,
         status: submission.status,
       },
